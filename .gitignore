@@ -1,0 +1,25 @@
+
+# build output directory
+build/
+
+# CMake files
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+compile_commands.json
+install_manifest.txt
+
+# IDE-specific
+*.swp
+*.swo
+*.user
+*.idea/
+*.vscode/
+
+# env
+.env
+.env.local
+
+# cache
+.cache/
