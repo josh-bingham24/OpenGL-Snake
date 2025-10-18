@@ -192,7 +192,10 @@ int main()
 
         // Move the snake
         if (currentFrame - lastTime >= 0.2) {
-            MoveSnake(&snake);
+            if (!MoveSnake(&snake)) {
+                printf("You crashed!\n");
+                break;
+            }
 
             lastTime = currentFrame;
         }
@@ -253,19 +256,19 @@ void processInput(GLFWwindow *window, float deltaTime)
     // player movement
     float cameraSpeed = 2.5f * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { 
-        // circle->position[1] += deltaTime * 5.0f;
-        snake.currentMovement = UP;
+        if (snake.currentMovement != DOWN)
+            snake.currentMovement = UP;
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        // circle->position[1] -= deltaTime * 5.0f;
-        snake.currentMovement = DOWN;
+        if (snake.currentMovement != UP)
+            snake.currentMovement = DOWN;
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        // circle->position[0] -= deltaTime * 5.0f;
-        snake.currentMovement = LEFT;
+        if (snake.currentMovement != RIGHT)
+            snake.currentMovement = LEFT;
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        // circle->position[0] += deltaTime * 5.0f;
-        snake.currentMovement = RIGHT;
+        if (snake.currentMovement != LEFT)
+            snake.currentMovement = RIGHT;
     }
 }

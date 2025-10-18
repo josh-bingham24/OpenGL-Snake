@@ -21,7 +21,7 @@ Snake CreateSnake(unsigned int initialLength, float speed) {
     return snake;
 }
 
-void MoveSnake(Snake *snake) {
+bool MoveSnake(Snake *snake) {
     vec3 previousPosition, temp;
     glm_vec3_copy(snake->links[0]->position, previousPosition);
 
@@ -52,15 +52,21 @@ void MoveSnake(Snake *snake) {
             break;
     }
 
-    if (snake->length == 1) {
-        return;
+    if (snake->length > 1) {
+        // check for collision
+        for (unsigned int i = 1; i < snake->length; i++) {
+            if (glm_vec3_eqv(snake->links[0]->position, snake->links[i]->position))
+                return false;
+        }
+
+        for (unsigned int i = 1; i < snake->length; i++) {
+            glm_vec3_copy(snake->links[i]->position, temp);
+            glm_vec3_copy(previousPosition, snake->links[i]->position);
+            glm_vec3_copy(temp, previousPosition);
+        }
     }
 
-    for (unsigned int i = 1; i < snake->length; i++) {
-        glm_vec3_copy(snake->links[i]->position, temp);
-        glm_vec3_copy(previousPosition, snake->links[i]->position);
-        glm_vec3_copy(temp, previousPosition);
-    }
+    return true;
 }
 
 void GrowSnake(Snake *snake) {

@@ -24,7 +24,7 @@ typedef struct {
 
 Snake CreateSnake(unsigned int initialLength, float speed);
 
-void MoveSnake(Snake *snake);
+bool MoveSnake(Snake *snake);
 void GrowSnake(Snake *snake);
 
 
