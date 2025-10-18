@@ -209,6 +209,10 @@ int main()
         glfwPollEvents();    
     }
 
+    if(snake.length >= 140) {
+        printf("Winner!\n");
+    }
+
     glfwTerminate();
     return 0;
 }
