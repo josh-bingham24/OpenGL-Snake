@@ -34,7 +34,7 @@ float lastFrame = 0.0f;
 
 
 // ----- Shapes -----
-Shape *circle;
+Shape *cheeseball;
 
 // ----- SNAKE -----
 Snake snake;
@@ -75,30 +75,35 @@ int main()
     camera = Camera_init(STATIC, 60.0f, 0.1f);
 
     // create snake
-    snake = CreateSnake(5, 1.0f);
+    snake = CreateSnake(12, 1.0f);
+    cheeseball = CreateCircle(0.3f, 36, (vec3){ 0.5f, 2.5f, 0.0f });
+    // MoveCheeseball(&snake, cheeseball);
 
-
-    // circle = CreateCircle(1, 36);
-    // float *vertices = CreateRectangle(1, 1);
 
     // vertex handling
-    unsigned int VBO, VAO, EBO;
+    unsigned int VBO, VBO2, VAO, VAO2;
     // glGenBuffers(1, &EBO);
     glGenBuffers(1, &VBO);
+    glGenBuffers(1, &VBO2);
     glGenVertexArrays(1, &VAO);
+    glGenVertexArrays(1, &VAO2);
 
-    // single triangle
+    // Snake
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, 3 * 5 * 6 * sizeof(float), snake.links[0]->vertices, GL_STATIC_DRAW);
-
-    // vertices
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
-    // colors
-    // glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(3 * sizeof(float)));
-    // glEnableVertexAttribArray(1);
-    // textures
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
+                          (void *)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    // Cheeseball
+    glBindVertexArray(VAO2);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+    glBufferData(GL_ARRAY_BUFFER, 3 * 5 * 36 * sizeof(float), cheeseball->vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
                           (void *)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
@@ -187,12 +192,9 @@ int main()
         setMat4(&shader, "view", view);
         setMat4(&shader, "projection", projection);
 
-        // draw objects
-        glBindVertexArray(VAO);
-
         // Move the snake
         if (currentFrame - lastTime >= 0.2) {
-            if (!MoveSnake(&snake)) {
+            if (!MoveSnake(&snake, cheeseball)) {
                 printf("You crashed!\n");
                 break;
             }
@@ -200,7 +202,15 @@ int main()
             lastTime = currentFrame;
         }
 
+        // draw cheeseball
+        glBindVertexArray(VAO2);
+        glm_mat4_identity(model);
+        glm_translate(model, cheeseball->position);
+        setMat4(&shader, "model", model);
+        glDrawArrays(GL_TRIANGLES, 0, 108);
+
         // draw all snake links
+        glBindVertexArray(VAO);
         for (unsigned int i = 0; i < snake.length; i++) {
             glm_mat4_identity(model);
             glm_translate(model, snake.links[i]->position);

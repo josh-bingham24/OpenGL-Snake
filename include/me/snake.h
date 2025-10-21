@@ -23,9 +23,10 @@ typedef struct {
 
 
 Snake CreateSnake(unsigned int initialLength, float speed);
+Shape** CreateCheeseballs();
 
-bool MoveSnake(Snake *snake);
-void GrowSnake(Snake *snake);
+bool MoveSnake(Snake *snake, Shape *cheeseball);
+void MoveCheeseball(Snake *snake, Shape *cheeseball);
 
 
 #endif
