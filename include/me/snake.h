@@ -8,9 +8,10 @@
 // ----- Snake Movement -----
 typedef enum {
     UP,
+    RIGHT,
     DOWN,
     LEFT,
-    RIGHT
+    INVALID
 } SnakeMovement;
 
 // ----- Snake Object -----
@@ -19,6 +20,8 @@ typedef struct {
     unsigned int length;
     float speed;
     SnakeMovement currentMovement;
+    SnakeMovement nextMovement;
+    SnakeMovement queuedMovement;
 } Snake;
 
 
@@ -26,6 +29,7 @@ Snake CreateSnake(unsigned int initialLength, float speed);
 Shape** CreateCheeseballs();
 
 bool MoveSnake(Snake *snake, Shape *cheeseball);
+void ChangeSnakeDirection(Snake *snake, SnakeMovement newDirection);
 void MoveCheeseball(Snake *snake, Shape *cheeseball);
 
 

@@ -2,13 +2,16 @@
 #include <me/shape_factory.h>
 #include <cglm/cglm.h>
 #include <stdlib.h>
+#include <time.h>
 
 Snake CreateSnake(unsigned int initialLength, float speed) {
     Snake snake = {
         .links = malloc(initialLength * sizeof(Shape*)),
         .length = initialLength,
         .speed = speed,
-        .currentMovement = LEFT
+        .currentMovement = LEFT,
+        .nextMovement = INVALID,
+        .queuedMovement = INVALID
     };
 
     float offset = 0.0f;
@@ -21,10 +24,6 @@ Snake CreateSnake(unsigned int initialLength, float speed) {
     return snake;
 }
 
-// Shape** CreateCheeseballs() {
-//     Shape **cheeseballs = malloc()
-// }
-
 void GrowSnake(Snake *snake) {
     snake->length++;
     int length = snake->length;
@@ -33,9 +32,34 @@ void GrowSnake(Snake *snake) {
     snake->links[length - 1] = CreateRectangle(1, 1, snake->links[length - 2]->position);
 }
 
+void ChangeSnakeDirection(Snake *snake, SnakeMovement newDirection) {
+    unsigned int currentMod = snake->currentMovement % 2;
+    unsigned int nextMod = snake->nextMovement % 2;
+    unsigned int newMod = newDirection % 2;
+
+    if (snake->nextMovement == INVALID) {
+        if (currentMod != newMod)
+            snake->nextMovement = newDirection;
+    }
+    else if (snake->queuedMovement == INVALID) {
+        if (nextMod != newMod)
+            snake->queuedMovement = newDirection;
+    }
+}
+
 bool MoveSnake(Snake *snake, Shape *cheeseball) {
     vec3 previousPosition, temp;
     glm_vec3_copy(snake->links[0]->position, previousPosition);
+
+    if (snake->queuedMovement != INVALID) {
+        snake->currentMovement = snake->nextMovement;
+        snake->nextMovement = snake->queuedMovement;
+        snake->queuedMovement = INVALID;
+    }
+    else if (snake->nextMovement != INVALID) {
+        snake->currentMovement = snake->nextMovement;
+        snake->nextMovement = INVALID;
+    }
 
     switch (snake->currentMovement) {
         case UP:
@@ -64,16 +88,11 @@ bool MoveSnake(Snake *snake, Shape *cheeseball) {
             break;
     }
 
-    // TODO: check for collision with cheeseball
+    // check for collision with cheeseball
     if (glm_vec3_eqv(snake->links[0]->position, cheeseball->position)) {
         GrowSnake(snake);
         MoveCheeseball(snake, cheeseball);
     }
-        
-    // for (unsigned int j = 0; j < 3; j++) {
-    //     if (glm_vec3_eqv(snake->links[0]->position, cheeseballs[i]->position))
-    //         GrowSnake(snake);
-    // }
 
     if (snake->length == 1)
         return true;
@@ -94,6 +113,8 @@ bool MoveSnake(Snake *snake, Shape *cheeseball) {
 void MoveCheeseball(Snake *snake, Shape *cheeseball) {
     vec3 newPos;
 
+    srand(time(0));
+
     bool validPosition = false;
     while (!validPosition) {
         validPosition = true;
@@ -110,7 +131,3 @@ void MoveCheeseball(Snake *snake, Shape *cheeseball) {
 
     glm_vec3_copy(newPos, cheeseball->position);
 }
-
-// Shape[] AddCheeseBall(Shape **cheeseballs) {
-
-// }

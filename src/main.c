@@ -17,7 +17,7 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void processInput(GLFWwindow *window, float deltaTime);
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 
 // ----- Shader -----
@@ -66,6 +66,7 @@ int main()
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback); 
+    glfwSetKeyCallback(window, key_callback);
 
 
     // setup shaders
@@ -75,7 +76,7 @@ int main()
     camera = Camera_init(STATIC, 60.0f, 0.1f);
 
     // create snake
-    snake = CreateSnake(12, 1.0f);
+    snake = CreateSnake(4, 1.0f);
     cheeseball = CreateCircle(0.3f, 36, (vec3){ 0.5f, 2.5f, 0.0f });
     // MoveCheeseball(&snake, cheeseball);
 
@@ -182,7 +183,7 @@ int main()
         lastFrame = currentFrame;  
 
         // process user input
-        processInput(window, deltaTime);
+        // processInput(window, deltaTime);
 
         // clear
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -238,6 +239,8 @@ int main()
         glfwPollEvents();    
     }
 
+    printf("Final length: %i\n", snake.length);
+
     if(snake.length >= 140) {
         printf("Winner!\n");
     }
@@ -273,28 +276,23 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     HandleMouse(&camera, xoffset, yoffset);
 }
 
-void processInput(GLFWwindow *window, float deltaTime)
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     // close window on escape
-    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    // player movement
-    float cameraSpeed = 2.5f * deltaTime;
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { 
-        if (snake.currentMovement != DOWN)
-            snake.currentMovement = UP;
+    // snake movement
+    if (key == GLFW_KEY_W && action == GLFW_PRESS) { 
+        ChangeSnakeDirection(&snake, UP);
     }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        if (snake.currentMovement != UP)
-            snake.currentMovement = DOWN;
+    if (key == GLFW_KEY_S && action == GLFW_PRESS) {
+        ChangeSnakeDirection(&snake, DOWN);
     }
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        if (snake.currentMovement != RIGHT)
-            snake.currentMovement = LEFT;
+    if (key == GLFW_KEY_A && action == GLFW_PRESS) {
+        ChangeSnakeDirection(&snake, LEFT);
     }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        if (snake.currentMovement != LEFT)
-            snake.currentMovement = RIGHT;
+    if (key == GLFW_KEY_D && action == GLFW_PRESS) {
+        ChangeSnakeDirection(&snake, RIGHT);
     }
 }
