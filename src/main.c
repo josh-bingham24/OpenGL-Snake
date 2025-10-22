@@ -21,7 +21,7 @@ void processInput(GLFWwindow *window, float deltaTime);
 
 
 // ----- Shader -----
-Shader shader;
+Shader snakeShader;
 
 // ----- Camera -----
 Camera camera;
@@ -69,7 +69,7 @@ int main()
 
 
     // setup shaders
-    Shader_init(&shader, "../src/shader_v.txt", "../src/shader_f.txt");
+    Shader_init(&snakeShader, "../src/shader_v.txt", "../src/shader_f.txt");
 
     // setup camera
     camera = Camera_init(STATIC, 60.0f, 0.1f);
@@ -122,14 +122,13 @@ int main()
 
 
     // setup textures
-    unsigned int texture;
+    unsigned int texture, cheeseballTexture;
     unsigned char *data;
     int width, height, nrChannels;
 
     // texture
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
-
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
@@ -138,6 +137,26 @@ int main()
 
     stbi_set_flip_vertically_on_load(true);
     data = stbi_load("../resources/awesomeface.png", &width, &height, &nrChannels,
+                     0);
+    if (data) {
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA,
+                   GL_UNSIGNED_BYTE, data);
+      glGenerateMipmap(GL_TEXTURE_2D);
+    } else {
+      printf("Failed to load face texture");
+    }
+
+    // cheeseball texture
+    glGenTextures(1, &cheeseballTexture);
+    glBindTexture(GL_TEXTURE_2D, cheeseballTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                    GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    stbi_set_flip_vertically_on_load(true);
+    data = stbi_load("../resources/Cheeseball.png", &width, &height, &nrChannels,
                      0);
     if (data) {
       glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA,
@@ -170,15 +189,8 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // shader config
-        useShader(&shader);
-        setInt(&shader, "texture1", 0);
-        // setInt(&shader, "texture", 1);
-
-        // bind textures
-        // glActiveTexture(GL_TEXTURE0);
-        // glBindTexture(GL_TEXTURE_2D, texture1);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texture);
+        useShader(&snakeShader);
+        setInt(&snakeShader, "texture1", 0);
 
 
         // transforms
@@ -189,8 +201,8 @@ int main()
         // glm_perspective(glm_rad(camera.fov), 4.0f / 3.0f, 0.1f, 100.0f, projection);
         glm_ortho(-8.0f, 8.0f, -6.0f, 6.0f, 0.1f, 100.0f, projection);
         
-        setMat4(&shader, "view", view);
-        setMat4(&shader, "projection", projection);
+        setMat4(&snakeShader, "view", view);
+        setMat4(&snakeShader, "projection", projection);
 
         // Move the snake
         if (currentFrame - lastTime >= 0.2) {
@@ -204,17 +216,21 @@ int main()
 
         // draw cheeseball
         glBindVertexArray(VAO2);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, cheeseballTexture);
         glm_mat4_identity(model);
         glm_translate(model, cheeseball->position);
-        setMat4(&shader, "model", model);
+        setMat4(&snakeShader, "model", model);
         glDrawArrays(GL_TRIANGLES, 0, 108);
 
         // draw all snake links
         glBindVertexArray(VAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture);
         for (unsigned int i = 0; i < snake.length; i++) {
             glm_mat4_identity(model);
             glm_translate(model, snake.links[i]->position);
-            setMat4(&shader, "model", model);
+            setMat4(&snakeShader, "model", model);
             glDrawArrays(GL_TRIANGLES, 0, 6);
         }
 
