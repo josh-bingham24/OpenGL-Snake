@@ -16,20 +16,25 @@ typedef enum {
 
 // ----- Snake Object -----
 typedef struct {
-    Shape **links;
+    Shape *links;
     unsigned int length;
     float speed;
-    SnakeMovement currentMovement;
-    SnakeMovement nextMovement;
-    SnakeMovement queuedMovement;
+    SnakeMovement movements[3];
 } Snake;
+
+// ----- Edible Item Manager Object -----
+typedef struct {
+    Shape *cheeseballs;
+    unsigned int count;
+    vec3 *validPositions;
+} CheeseballManager;
 
 
 Snake CreateSnake(unsigned int initialLength, float speed);
-Shape** CreateCheeseballs();
-
 bool MoveSnake(Snake *snake, Shape *cheeseball);
 void ChangeSnakeDirection(Snake *snake, SnakeMovement newDirection);
+
+// CheeseballManager CreateCheeseballManager(unsigned int startAmount, Snake snake);
 void MoveCheeseball(Snake *snake, Shape *cheeseball);
 
 

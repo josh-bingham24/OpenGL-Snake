@@ -6,6 +6,7 @@
 #include <learnopengl/shader.h>
 #include <stb_image.h>
 #include <learnopengl/camera.h>
+#include <time.h>
 
 // me
 #include <me/shape_factory.h>
@@ -34,7 +35,7 @@ float lastFrame = 0.0f;
 
 
 // ----- Shapes -----
-Shape *cheeseball;
+Shape cheeseball;
 
 // ----- SNAKE -----
 Snake snake;
@@ -78,8 +79,8 @@ int main()
     // create snake
     snake = CreateSnake(4, 1.0f);
     cheeseball = CreateCircle(0.3f, 36, (vec3){ 0.5f, 2.5f, 0.0f });
-    // MoveCheeseball(&snake, cheeseball);
-
+    
+    srand(time(0));
 
     // vertex handling
     unsigned int VBO, VBO2, VAO, VAO2;
@@ -92,7 +93,7 @@ int main()
     // Snake
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, 3 * 5 * 6 * sizeof(float), snake.links[0]->vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 3 * 5 * 6 * sizeof(float), snake.links[0].vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
@@ -102,17 +103,12 @@ int main()
     // Cheeseball
     glBindVertexArray(VAO2);
     glBindBuffer(GL_ARRAY_BUFFER, VBO2);
-    glBufferData(GL_ARRAY_BUFFER, 3 * 5 * 36 * sizeof(float), cheeseball->vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 3 * 5 * 36 * sizeof(float), cheeseball.vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
                           (void *)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
-
-    // EBO
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
-    //              GL_STATIC_DRAW);
 
     // unbind VBO and VAO
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -127,7 +123,7 @@ int main()
     unsigned char *data;
     int width, height, nrChannels;
 
-    // texture
+    // snake texture
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
@@ -207,7 +203,7 @@ int main()
 
         // Move the snake
         if (currentFrame - lastTime >= 0.2) {
-            if (!MoveSnake(&snake, cheeseball)) {
+            if (!MoveSnake(&snake, &cheeseball)) {
                 printf("You crashed!\n");
                 break;
             }
@@ -220,7 +216,7 @@ int main()
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, cheeseballTexture);
         glm_mat4_identity(model);
-        glm_translate(model, cheeseball->position);
+        glm_translate(model, cheeseball.position);
         setMat4(&snakeShader, "model", model);
         glDrawArrays(GL_TRIANGLES, 0, 108);
 
@@ -230,7 +226,7 @@ int main()
         glBindTexture(GL_TEXTURE_2D, texture);
         for (unsigned int i = 0; i < snake.length; i++) {
             glm_mat4_identity(model);
-            glm_translate(model, snake.links[i]->position);
+            glm_translate(model, snake.links[i].position);
             setMat4(&snakeShader, "model", model);
             glDrawArrays(GL_TRIANGLES, 0, 6);
         }
@@ -241,7 +237,7 @@ int main()
 
     printf("Final length: %i\n", snake.length);
 
-    if(snake.length >= 140) {
+    if(snake.length == 140) {
         printf("Winner!\n");
     }
 

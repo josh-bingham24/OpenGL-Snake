@@ -8,10 +8,10 @@ void DisposeShape(Shape *shape);
 
 
 
-Shape* CreateCircle(float radius, unsigned int edges, vec3 initialPosition) {
-    Shape *circle = malloc(sizeof(Shape));
+Shape CreateCircle(float radius, unsigned int edges, vec3 initialPosition) {
+    Shape circle;
 
-    glm_vec3_copy(initialPosition, circle->position);
+    glm_vec3_copy(initialPosition, circle.position);
 
     float *vertices = malloc(3 * 5 * edges * sizeof(float));
 
@@ -61,16 +61,16 @@ Shape* CreateCircle(float radius, unsigned int edges, vec3 initialPosition) {
 
         degrees += step;
     }
-    circle->vertices = vertices;
+    circle.vertices = vertices;
 
     return circle;
 }
 
-Shape *CreateRectangle(float width, float height, vec3 initialPosition) {
-    Shape *rectangle = malloc(sizeof(Shape));
+Shape CreateRectangle(float width, float height, vec3 initialPosition) {
+    Shape rectangle;
     float *vertices = malloc(6 * 5 * sizeof(float));
 
-    glm_vec3_copy(initialPosition, rectangle->position);
+    glm_vec3_copy(initialPosition, rectangle.position);
 
     float x = width / 2;
     float y = height / 2;
@@ -113,12 +113,11 @@ Shape *CreateRectangle(float width, float height, vec3 initialPosition) {
         vertices[i * 5 + 4] = yText;
     }
 
-    rectangle->vertices = vertices;
+    rectangle.vertices = vertices;
 
     return rectangle;
 }
 
 void DisposeShape(Shape *shape) {
     free(shape->vertices);
-    free(shape);
 }

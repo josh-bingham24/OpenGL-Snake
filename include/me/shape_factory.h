@@ -9,8 +9,8 @@ typedef struct {
 } Shape;
 
 
-Shape* CreateCircle(float radius, unsigned int edges, vec3 initialPosition);
-Shape* CreateRectangle(float width, float height, vec3 initialPosition);
-void DisposeShape(Shape *shape);
+Shape CreateCircle(float radius, unsigned int edges, vec3 initialPosition);
+Shape CreateRectangle(float width, float height, vec3 initialPosition);
+void DestroyShape(Shape *shape);
 
 #endif
