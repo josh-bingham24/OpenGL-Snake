@@ -36,6 +36,7 @@ float lastFrame = 0.0f;
 
 // ----- Shapes -----
 Shape cheeseball;
+CheeseballManager cheeseballManager;
 
 // ----- SNAKE -----
 Snake snake;
@@ -79,6 +80,7 @@ int main()
     // create snake
     snake = CreateSnake(4, 1.0f);
     cheeseball = CreateCircle(0.3f, 36, (vec3){ 0.5f, 2.5f, 0.0f });
+    cheeseballManager = CreateCheeseballManager(10, snake);
     
     srand(time(0));
 
@@ -103,7 +105,7 @@ int main()
     // Cheeseball
     glBindVertexArray(VAO2);
     glBindBuffer(GL_ARRAY_BUFFER, VBO2);
-    glBufferData(GL_ARRAY_BUFFER, 3 * 5 * 36 * sizeof(float), cheeseball.vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 3 * 5 * 36 * sizeof(float), cheeseballManager.cheeseballs[0].vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
@@ -203,7 +205,7 @@ int main()
 
         // Move the snake
         if (currentFrame - lastTime >= 0.2) {
-            if (!MoveSnake(&snake, &cheeseball)) {
+            if (!MoveSnake(&snake, &cheeseballManager)) {
                 printf("You crashed!\n");
                 break;
             }
@@ -215,10 +217,12 @@ int main()
         glBindVertexArray(VAO2);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, cheeseballTexture);
-        glm_mat4_identity(model);
-        glm_translate(model, cheeseball.position);
-        setMat4(&snakeShader, "model", model);
-        glDrawArrays(GL_TRIANGLES, 0, 108);
+        for (unsigned int i = 0; i < cheeseballManager.cheeseballCount; i++) {
+            glm_mat4_identity(model);
+            glm_translate(model, cheeseballManager.cheeseballs[i].position);
+            setMat4(&snakeShader, "model", model);
+            glDrawArrays(GL_TRIANGLES, 0, 108);
+        }
 
         // draw all snake links
         glBindVertexArray(VAO);
@@ -237,7 +241,7 @@ int main()
 
     printf("Final length: %i\n", snake.length);
 
-    if(snake.length == 140) {
+    if(snake.length == 192) {
         printf("Winner!\n");
     }
 

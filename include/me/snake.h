@@ -25,17 +25,18 @@ typedef struct {
 // ----- Edible Item Manager Object -----
 typedef struct {
     Shape *cheeseballs;
-    unsigned int count;
     vec3 *validPositions;
+    unsigned int cheeseballCount;
+    unsigned int validPositionCount;
 } CheeseballManager;
 
 
 Snake CreateSnake(unsigned int initialLength, float speed);
-bool MoveSnake(Snake *snake, Shape *cheeseball);
+bool MoveSnake(Snake *snake, CheeseballManager *manager);
 void ChangeSnakeDirection(Snake *snake, SnakeMovement newDirection);
 
-// CheeseballManager CreateCheeseballManager(unsigned int startAmount, Snake snake);
-void MoveCheeseball(Snake *snake, Shape *cheeseball);
+CheeseballManager CreateCheeseballManager(unsigned int startAmount, Snake snake);
+void MoveCheeseball(CheeseballManager *manager, int cheeseballIndex);
 
 
 #endif

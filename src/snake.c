@@ -45,7 +45,7 @@ void ChangeSnakeDirection(Snake *snake, SnakeMovement newDirection) {
     }
 }
 
-bool MoveSnake(Snake *snake, Shape *cheeseball) {
+bool MoveSnake(Snake *snake, CheeseballManager *manager) {
     vec3 previousPosition, temp;
     glm_vec3_copy(snake->links[0].position, previousPosition);
 
@@ -86,9 +86,6 @@ bool MoveSnake(Snake *snake, Shape *cheeseball) {
             break;
     }
 
-    if (snake->length == 1)
-        return true;
-
     for (unsigned int i = 1; i < snake->length; i++) {
         glm_vec3_copy(snake->links[i].position, temp);
         glm_vec3_copy(previousPosition, snake->links[i].position);
@@ -100,43 +97,92 @@ bool MoveSnake(Snake *snake, Shape *cheeseball) {
     }
 
     // check for collision with cheeseball
-    if (glm_vec3_eqv(snake->links[0].position, cheeseball->position)) {
-        GrowSnake(snake);
-        MoveCheeseball(snake, cheeseball);
+    bool collisionDetected = false;
+    for (unsigned int i = 0; i < manager->cheeseballCount; i++) {
+        if (glm_vec3_eqv(snake->links[0].position, manager->cheeseballs[i].position)) {
+            GrowSnake(snake);
+            MoveCheeseball(manager, i);
+            collisionDetected = true;
+
+            break;
+        }
+    }
+
+    // update valid positions
+    if (!collisionDetected) {
+        for (unsigned int i = 0; i < manager->validPositionCount; i++) {
+            if (glm_vec3_eqv(manager->validPositions[i], snake->links[0].position))
+                glm_vec3_copy(temp, manager->validPositions[i]);
+        }
     }
 
     return true;
 }
 
-void MoveCheeseball(Snake *snake, Shape *cheeseball) {
-    vec3 newPos;
 
-    bool validPosition = false;
-    while (!validPosition) {
-        validPosition = true;
+void MoveCheeseball(CheeseballManager *manager, int cheeseballIndex) {
+    // handle case where no more valid positions
+    if (manager->validPositionCount == 0) {
+        glm_vec3_copy((vec3){ 10.0f, 10.0f, 0.0f }, manager->cheeseballs[cheeseballIndex].position);
+        return;
+    }
 
-        // TODO: instead of generating a random position until we find a valid one, 
-        // keep a list of available spaces, then pick a random position from that list
-        // Each item in the list should be a vector
-        float x = ((float)(rand() % 14) - 6) + 0.5f;
-        float y = ((float)(rand() % 10) - 4) + 0.5f;
-        glm_vec3_copy((vec3){ x, y, 0.0f }, newPos);
+    int posIndex = rand() % manager->validPositionCount;
+    manager->validPositionCount -= 1;
 
-        for (unsigned int i = 0; i < snake->length; i++) {
-            if (glm_vec3_eqv(snake->links[i].position, newPos))
-                validPosition = false;
+    glm_vec3_copy(manager->validPositions[posIndex], manager->cheeseballs[cheeseballIndex].position);
+
+    // remove vector from valid positions
+    for (unsigned int j = posIndex; j < manager->validPositionCount; j++) {
+        glm_vec3_copy(manager->validPositions[j + 1], manager->validPositions[j]);
+    }
+
+    manager->validPositions = realloc(manager->validPositions, manager->validPositionCount * sizeof(vec3));
+}
+
+
+CheeseballManager CreateCheeseballManager(unsigned int startAmount, Snake snake) {
+    CheeseballManager manager = {
+        .cheeseballs = malloc(startAmount * sizeof(Shape)),
+        .validPositions = malloc((192 - snake.length) * sizeof(vec3)),
+        .cheeseballCount = startAmount,
+        .validPositionCount = 192 - snake.length
+    };
+
+    // create array of valid positions
+    float x = -7.5f;
+    float y = 5.5f;
+    unsigned int validIndex = 0;
+    for (unsigned int i = 0; i < 192; i++) {
+        vec3 vec = { x, y, 0.0f };
+
+        // make sure position is a part of snake
+        bool isSnake = false;
+        for (unsigned int j = 0; j < snake.length; j++) {
+            if (glm_vec3_eqv(snake.links[j].position, vec))
+                isSnake = true;
+        }
+
+        if (!isSnake) {
+            glm_vec3_copy(vec, manager.validPositions[validIndex]);
+            validIndex++;
+        }
+
+        if (x == 7.5f){
+            x = -7.5f;
+            y -= 1.0f;
+        }
+        else {
+            x += 1.0f;
         }
     }
 
-    glm_vec3_copy(newPos, cheeseball->position);
+    // create cheeseball(s)
+    for (unsigned int i = 0; i < startAmount; i++) {
+        manager.cheeseballs[i] = CreateCircle(0.3f, 36, (vec3){ 0.0f, 0.0f, 0.0f });
+
+        MoveCheeseball(&manager, i);
+    } 
+
+    return manager;
 }
-
-// CheeseballManager CreateCheeseballManager(unsigned int startAmount, Snake snake) {
-//     CheeseballManager manager = {
-//         .cheeseballs = malloc(startAmount * sizeof(Shape)),
-//         .count = startAmount,
-//         .validPositions = malloc((140 - snake.length) * sizeof(vec3))
-//     };
-
-
-// }
