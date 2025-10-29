@@ -80,7 +80,7 @@ int main()
     // create snake
     snake = CreateSnake(4, 1.0f);
     cheeseball = CreateCircle(0.3f, 36, (vec3){ 0.5f, 2.5f, 0.0f });
-    cheeseballManager = CreateCheeseballManager(10, snake);
+    cheeseballManager = CreateCheeseballManager(100, snake);
     
     srand(time(0));
 
@@ -196,15 +196,14 @@ int main()
         mat4 model, view, projection;
 
         // create view
-        glm_look(camera.position, camera.front, camera.up, view);            // draw
-        // glm_perspective(glm_rad(camera.fov), 4.0f / 3.0f, 0.1f, 100.0f, projection);
+        glm_look(camera.position, camera.front, camera.up, view);
         glm_ortho(-8.0f, 8.0f, -6.0f, 6.0f, 0.1f, 100.0f, projection);
         
         setMat4(&snakeShader, "view", view);
         setMat4(&snakeShader, "projection", projection);
 
         // Move the snake
-        if (currentFrame - lastTime >= 0.2) {
+        if (currentFrame - lastTime >= 0.2f) {
             if (!MoveSnake(&snake, &cheeseballManager)) {
                 printf("You crashed!\n");
                 break;

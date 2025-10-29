@@ -26,7 +26,13 @@ void GrowSnake(Snake *snake) {
     snake->length++;
     int length = snake->length;
 
-    snake->links = realloc(snake->links, sizeof(Shape) * length);
+    Shape *tmp = realloc(snake->links, sizeof(Shape) * length);
+    if (tmp != NULL) {
+        snake->links = tmp;
+    } else {
+        printf("Error reallocating snake links\n");
+    }
+
     snake->links[length - 1] = CreateRectangle(1, 1, snake->links[length - 2].position);
 }
 
@@ -86,6 +92,18 @@ bool MoveSnake(Snake *snake, CheeseballManager *manager) {
             break;
     }
 
+    // check for collision with cheeseball
+    bool collisionDetected = false;
+    for (unsigned int i = 0; i < manager->cheeseballCount; i++) {
+        if (glm_vec3_eqv(snake->links[0].position, manager->cheeseballs[i].position)) {
+            MoveCheeseball(manager, i);
+            GrowSnake(snake);
+            collisionDetected = true;
+
+            break;
+        }
+    }
+
     for (unsigned int i = 1; i < snake->length; i++) {
         glm_vec3_copy(snake->links[i].position, temp);
         glm_vec3_copy(previousPosition, snake->links[i].position);
@@ -96,23 +114,13 @@ bool MoveSnake(Snake *snake, CheeseballManager *manager) {
             return false;
     }
 
-    // check for collision with cheeseball
-    bool collisionDetected = false;
-    for (unsigned int i = 0; i < manager->cheeseballCount; i++) {
-        if (glm_vec3_eqv(snake->links[0].position, manager->cheeseballs[i].position)) {
-            GrowSnake(snake);
-            MoveCheeseball(manager, i);
-            collisionDetected = true;
-
-            break;
-        }
-    }
-
     // update valid positions
     if (!collisionDetected) {
         for (unsigned int i = 0; i < manager->validPositionCount; i++) {
-            if (glm_vec3_eqv(manager->validPositions[i], snake->links[0].position))
+            if (glm_vec3_eqv(manager->validPositions[i], snake->links[0].position)) {
                 glm_vec3_copy(temp, manager->validPositions[i]);
+                break;
+            }
         }
     }
 
@@ -123,12 +131,13 @@ bool MoveSnake(Snake *snake, CheeseballManager *manager) {
 void MoveCheeseball(CheeseballManager *manager, int cheeseballIndex) {
     // handle case where no more valid positions
     if (manager->validPositionCount == 0) {
+        // move offscreen
         glm_vec3_copy((vec3){ 10.0f, 10.0f, 0.0f }, manager->cheeseballs[cheeseballIndex].position);
         return;
     }
 
     int posIndex = rand() % manager->validPositionCount;
-    manager->validPositionCount -= 1;
+    manager->validPositionCount--;
 
     glm_vec3_copy(manager->validPositions[posIndex], manager->cheeseballs[cheeseballIndex].position);
 
@@ -137,7 +146,12 @@ void MoveCheeseball(CheeseballManager *manager, int cheeseballIndex) {
         glm_vec3_copy(manager->validPositions[j + 1], manager->validPositions[j]);
     }
 
-    manager->validPositions = realloc(manager->validPositions, manager->validPositionCount * sizeof(vec3));
+    vec3 *tmp = realloc(manager->validPositions, manager->validPositionCount * sizeof(vec3));
+    if (tmp != NULL || manager->validPositionCount == 0) {
+        manager->validPositions = tmp;
+    } else {
+        printf("Error reallocating valid positions\n");
+    }
 }
 
 
@@ -182,7 +196,7 @@ CheeseballManager CreateCheeseballManager(unsigned int startAmount, Snake snake)
         manager.cheeseballs[i] = CreateCircle(0.3f, 36, (vec3){ 0.0f, 0.0f, 0.0f });
 
         MoveCheeseball(&manager, i);
-    } 
+    }
 
     return manager;
 }
