@@ -80,7 +80,7 @@ int main()
     // create snake
     snake = CreateSnake(4, 1.0f);
     cheeseball = CreateCircle(0.3f, 36, (vec3){ 0.5f, 2.5f, 0.0f });
-    cheeseballManager = CreateCheeseballManager(100, snake);
+    cheeseballManager = CreateCheeseballManager(5, snake);
     
     srand(time(0));
 
@@ -230,6 +230,7 @@ int main()
         for (unsigned int i = 0; i < snake.length; i++) {
             glm_mat4_identity(model);
             glm_translate(model, snake.links[i].position);
+            glm_rotate(model, glm_rad(snake.links[i].rotation), (vec3){ 0.0f, 0.0f, 1.0f });
             setMat4(&snakeShader, "model", model);
             glDrawArrays(GL_TRIANGLES, 0, 6);
         }

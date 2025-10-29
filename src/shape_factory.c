@@ -62,6 +62,7 @@ Shape CreateCircle(float radius, unsigned int edges, vec3 initialPosition) {
         degrees += step;
     }
     circle.vertices = vertices;
+    circle.rotation = 0.0f;
 
     return circle;
 }
@@ -114,6 +115,7 @@ Shape CreateRectangle(float width, float height, vec3 initialPosition) {
     }
 
     rectangle.vertices = vertices;
+    rectangle.rotation = 0.0f;
 
     return rectangle;
 }

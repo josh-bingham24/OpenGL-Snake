@@ -16,6 +16,7 @@ Snake CreateSnake(unsigned int initialLength, float speed) {
     for (unsigned int i = 0; i < initialLength; i++) {
         vec3 pos = { offset, 0.0f, 0.0f };
         snake.links[i] = CreateRectangle(1, 1, (vec3){ (float)(i + 0.5), -0.5f, 0.0f });
+        snake.links[i].rotation = 90.0f;
         offset += 2.0f;
     }
 
@@ -52,8 +53,11 @@ void ChangeSnakeDirection(Snake *snake, SnakeMovement newDirection) {
 }
 
 bool MoveSnake(Snake *snake, CheeseballManager *manager) {
-    vec3 previousPosition, temp;
+    vec3 previousPosition, tempPosition;
     glm_vec3_copy(snake->links[0].position, previousPosition);
+
+    float previousRotation, tempRotation;
+    previousRotation = snake->links[0].rotation;
 
     if (snake->movements[2] != INVALID) {
         snake->movements[0] = snake->movements[1];
@@ -71,24 +75,32 @@ bool MoveSnake(Snake *snake, CheeseballManager *manager) {
                 snake->links[0].position[1] *= -1.0f;
             else
                 snake->links[0].position[1] += snake->speed;
+
+            snake->links[0].rotation = 0.0f;
             break;
         case DOWN:
             if (snake->links[0].position[1] <= -5.0f)
                 snake->links[0].position[1] *= -1.0f;
             else
                 snake->links[0].position[1] -= snake->speed;
+
+            snake->links[0].rotation = 180.0f;
             break;
         case LEFT:
             if (snake->links[0].position[0] <= -7.0f)
                 snake->links[0].position[0] *= -1.0f;
             else
                 snake->links[0].position[0] -= snake->speed;
+
+            snake->links[0].rotation = 90.0f;
             break;
         case RIGHT:
             if (snake->links[0].position[0] >= 7.0f)
                 snake->links[0].position[0] *= -1.0f;
             else
                 snake->links[0].position[0] += snake->speed;
+
+            snake->links[0].rotation = 270.0f;
             break;
     }
 
@@ -105,9 +117,15 @@ bool MoveSnake(Snake *snake, CheeseballManager *manager) {
     }
 
     for (unsigned int i = 1; i < snake->length; i++) {
-        glm_vec3_copy(snake->links[i].position, temp);
+        // position
+        glm_vec3_copy(snake->links[i].position, tempPosition);
         glm_vec3_copy(previousPosition, snake->links[i].position);
-        glm_vec3_copy(temp, previousPosition);
+        glm_vec3_copy(tempPosition, previousPosition);
+
+        // rotation
+        tempRotation = snake->links[i].rotation;
+        snake->links[i].rotation = previousRotation;
+        previousRotation = tempRotation;
 
         // check for collision with self
         if (glm_vec3_eqv(snake->links[0].position, snake->links[i].position))
@@ -118,7 +136,7 @@ bool MoveSnake(Snake *snake, CheeseballManager *manager) {
     if (!collisionDetected) {
         for (unsigned int i = 0; i < manager->validPositionCount; i++) {
             if (glm_vec3_eqv(manager->validPositions[i], snake->links[0].position)) {
-                glm_vec3_copy(temp, manager->validPositions[i]);
+                glm_vec3_copy(tempPosition, manager->validPositions[i]);
                 break;
             }
         }

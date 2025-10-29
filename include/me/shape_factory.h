@@ -6,6 +6,7 @@
 typedef struct {
     float *vertices;
     vec3 position;
+    float rotation;
 } Shape;
 
 
